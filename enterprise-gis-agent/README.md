@@ -1,6 +1,6 @@
 # Enterprise Conversational GIS Agent
 
-This repository contains a modular, Docker-ready enterprise GIS application scaffold that integrates an ArcGIS Experience Builder custom widget with a FastAPI backend, approved GIS tool layer restrictions, and an Ollama-based model provider. The code is intentionally built to be portable across Linux containers and macOS development hosts without hard-coding OS-specific behavior.
+This repository contains an enterprise GIS application scaffold integrating an ArcGIS Experience Builder custom widget, FastAPI backend, approved layer catalog, GeoAgent, and Ollama. The container runtime is Linux-based and suitable for Docker-compatible hosts; development is also supported on macOS.
 
 ## Current environment status
 
@@ -31,14 +31,21 @@ Typical deployment path:
 4. Configure the backend URL and map widget association in the widget settings.
 5. Publish or preview the app and confirm the widget connects to the FastAPI backend.
 
+## Agent integration
+
+The agent is initialized with the public `geoagent.create_agent` factory and `GeoAgentConfig` API. The selected release is GeoAgent `1.9.0`; its declared minimum Strands version is `1.37`, and the resolved lock installs Strands `1.61.1` with Ollama client `0.6.3`. Ollama is configured using `GeoAgentConfig(provider="ollama", model=..., ollama_host=..., temperature=0.0)`. GeoAgent resolves and constructs its supported Strands Ollama model internally.
+
+GIS tools use GeoAgent's `@geo_tool` decorator and the documented `create_agent(..., tools=...)` registration mechanism. The bound query tool checks the approved catalog, operation and group restrictions, validates structured filters, restricts output fields, and captures returned GeoJSON in a request-scoped `ResultCapture`. The API returns GeoAgent's answer separately from the captured features. Application code does not instantiate Strands `Agent` or call an Ollama client directly.
+
+GeoAgent and Strands require Python 3.11 or newer. `backend/requirements.txt` pins direct dependencies and explicitly declares `GeoAgent[ollama,browser]==1.9.0`; `backend/requirements.lock` pins the resolved dependency set for Python 3.11.
+
 ## Running locally
 
 ```bash
-cd enterprise-gis-agent/backend
-python3 -m venv .venv
+cd enterprise-gis-agent
+uv venv --python 3.11 .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
-cd ..
+uv pip install --python .venv/bin/python -r backend/requirements.lock
 python -m pytest backend/tests -q
 uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
@@ -67,4 +74,13 @@ The allowlist is defined in `backend/catalog.json`. Add or update approved servi
 
 ## Known limitation
 
-This machine does not contain a live ArcGIS Enterprise Portal or Experience Builder installation; therefore the final integration with real Portal OAuth, feature queries, and the native map widget must be completed in the target enterprise environment.
+This machine does not contain a live ArcGIS Enterprise Portal or Experience Builder installation; therefore integration with real Portal OAuth, feature queries, and the native map widget must be completed in the target enterprise environment. The current ArcGIS client query method remains a development placeholder. The OAuth endpoints and WebSocket module are also scaffolding, not verified production authentication or streaming implementations.
+
+## Architecture verification
+
+- GeoAgent `1.9.0`, Strands Agents `1.61.1`, Ollama client `0.6.3` installed under Python 3.11.17.
+- GeoAgent public entry point: `geoagent.create_agent`, with `GeoAgentContext` and `GeoAgentConfig`.
+- Ollama configuration: GeoAgent provider `ollama`, configured host/model, temperature `0.0`; model construction occurs inside GeoAgent's resolver.
+- GIS tool registration: custom `@geo_tool` function passed to `create_agent` via `tools`.
+- Actual result capture: `backend/app/agent/tools.py` validates and records GIS tool results in a request-scoped collector; response assembly returns answer and GeoJSON independently.
+- Regression coverage includes a simulated Strands-format tool call through GeoAgent's real `chat()` loop, tool authorization, actual output preservation, and concurrent request isolation.

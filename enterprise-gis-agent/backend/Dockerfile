@@ -8,8 +8,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential libgdal-dev && rm -rf /var/lib/apt/lists/*
 
-COPY backend/requirements.txt ./requirements.txt
-RUN python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+COPY backend/requirements.lock ./requirements.lock
+RUN python -m pip install --upgrade pip && python -m pip install -r requirements.lock
 
 COPY backend ./backend
 COPY .env.example ./.env.example
