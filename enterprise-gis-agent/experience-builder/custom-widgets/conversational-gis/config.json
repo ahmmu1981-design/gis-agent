@@ -1,0 +1,7 @@
+{
+  "backendUrl": "http://localhost:8000/api",
+  "mapWidgetId": "map0",
+  "chatTitle": "GIS Assistant",
+  "maxResults": 50,
+  "resultsLayerTitle": "AI Results"
+}

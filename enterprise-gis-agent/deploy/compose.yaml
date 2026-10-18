@@ -1,0 +1,57 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: gis-agent-backend
+    environment:
+      PORTAL_URL: ${PORTAL_URL:-https://portal.example.com}
+      ARCGIS_SERVER_URL: ${ARCGIS_SERVER_URL:-https://server.example.com}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
+      MODEL_TEMPERATURE: ${MODEL_TEMPERATURE:-0.0}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-production}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      CATALOG_PATH: ${CATALOG_PATH:-/app/backend/catalog.json}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-30}
+      MAX_FEATURES: ${MAX_FEATURES:-500}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - ollama
+    networks:
+      - gis-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: gis-agent-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - gis-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: gis-agent-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - gis-net
+    command: serve
+
+networks:
+  gis-net:
+    driver: bridge
+
+volumes:
+  ollama_data:

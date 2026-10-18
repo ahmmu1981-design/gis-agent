@@ -1,0 +1,34 @@
+{
+  "layers": [
+    {
+      "catalog_id": "sample_facilities",
+      "title": "Sample facilities",
+      "description": "Example approved facility layer for local development and tests.",
+      "service_path": "https://example-portal.example.com/server/rest/services/SampleFacilities/FeatureServer/0",
+      "service_type": "FeatureServer",
+      "layer_id": 0,
+      "geometry_type": "Point",
+      "spatial_reference": 4326,
+      "approved_output_fields": ["OBJECTID", "name", "status", "category", "address"],
+      "filterable_fields": ["status", "category", "name"],
+      "supported_operations": ["query", "nearest", "within_distance"],
+      "max_result_count": 100,
+      "allowed_groups": []
+    },
+    {
+      "catalog_id": "sample_boundaries",
+      "title": "Sample administrative boundaries",
+      "description": "Example approved polygon layer for local development and tests.",
+      "service_path": "https://example-portal.example.com/server/rest/services/SampleBoundaries/FeatureServer/0",
+      "service_type": "FeatureServer",
+      "layer_id": 0,
+      "geometry_type": "Polygon",
+      "spatial_reference": 4326,
+      "approved_output_fields": ["OBJECTID", "name", "region", "code"],
+      "filterable_fields": ["region", "code", "name"],
+      "supported_operations": ["query", "point_in_polygon"],
+      "max_result_count": 100,
+      "allowed_groups": []
+    }
+  ]
+}

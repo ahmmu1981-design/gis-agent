@@ -1,0 +1,12 @@
+{
+  "name": "conversational-gis",
+  "label": "Conversational GIS",
+  "description": "Conversational GIS widget for ArcGIS Experience Builder",
+  "type": "widget",
+  "version": "1.0.0",
+  "properties": {
+    "supportsMapWidget": true,
+    "supportsSpatialReference": true,
+    "supportsConfig": true
+  }
+}
